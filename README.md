@@ -57,4 +57,4 @@ Dokumen internal proyek (PRD, Architecture, Design, Schema, Rules, PLAN, TODO) s
 
 ## Lisensi
 
-Demo project bebas digunakan untuk pembelajaran dan pengembangan.
+Demo project bebas digunakan untuk pembelajaran dan pengembangan. https://hajiumroh.naxgrinting.my.id
