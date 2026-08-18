@@ -10,7 +10,7 @@ Platform manajemen perjalanan **haji & umroh** digital untuk **travel umroh**: l
 
 - 🕌 **Landing page publik (12 section)** hero, layanan, tentang, testimoni, ustadz, partner, artikel, lokasi kantor, CTA
 - 📦 **Katalog paket haji & umroh** + pendaftaran jamaah mandiri multi-step
-- 💳 **Pembayaran QRIS & cicilan** program "umroh dulu, bayar lunas nanti"
+- 💳 **Pembayaran QRIS & tabungan** program "umroh dulu, bayar lunas nanti"
 - 👨‍💼 **Portal admin travel (B2B)** dashboard, jamaah, paket, pembayaran, dokumen, manifest, laporan, notifikasi, manajemen user
 - 🧕 **Portal jamaah (B2C)** dashboard, upload dokumen, pembayaran, profil
 
