@@ -1,0 +1,272 @@
+// Sistem Haji & Umroh — Prisma schema
+// Model: entitas database + model CMS landing page.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ ENUM ============
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  STAFF
+  JAMAAH
+}
+
+enum QrisProvider {
+  DANA
+  GOPAY
+}
+
+enum TipePaket {
+  HAJI
+  UMROH
+}
+
+enum JenisKelamin {
+  LAKI_LAKI
+  PEREMPUAN
+}
+
+enum StatusDokumen {
+  BELUM
+  UPLOAD
+  VERIFIED
+  REJECTED
+}
+
+enum StatusPendaftaran {
+  MENUNGGU
+  AKTIF
+  LUNAS
+  BATAL
+}
+
+enum SkemaBayar {
+  NORMAL
+  UMROH_DULU_BAYAR_NANTI
+}
+
+enum StatusTagihan {
+  BELUM
+  MENUNGGU_VERIFIKASI
+  LUNAS
+  TERLAMBAT
+}
+
+enum MetodeBayar {
+  QRIS
+  TRANSFER
+  CASH
+}
+
+enum StatusVerifikasi {
+  MENUNGGU
+  DITERIMA
+  DITOLAK
+}
+
+enum TipeDokumen {
+  PASPOR
+  VISA
+  FOTO
+  KTP
+  SERTIFIKAT
+  LAINNYA
+}
+
+// ============ MODEL BISNIS ============
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(STAFF)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  jamaah    Jamaah?
+}
+
+model SistemConfig {
+  id                  String       @id @default(cuid())
+  qrisDanaString      String
+  qrisGopayString     String
+  qrisDefaultProvider QrisProvider @default(DANA)
+  rekeningBank        String?
+  namaRekening        String?
+  namaBank            String?
+  updatedAt           DateTime     @updatedAt
+  updatedBy           String? // userId super admin
+}
+
+model Paket {
+  id           String    @id @default(cuid())
+  nama         String
+  tipe         TipePaket
+  harga        Decimal
+  kuota        Int
+  tanggalBuka  DateTime
+  tanggalTutup DateTime
+  itinerary    String?
+  fasilitas    String[]
+  isAktif      Boolean   @default(true)
+  jamaah       Jamaah[]
+  testimoni    Testimoni[]
+  createdAt    DateTime  @default(now())
+}
+
+model Jamaah {
+  id               String             @id @default(cuid())
+  nomorRegistrasi  String             @unique // auto-generate: HU-YYYY-NNNN
+  userId           String?            @unique
+  user             User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  paketId          String
+  paket            Paket              @relation(fields: [paketId], references: [id])
+  kloter           String?
+
+  // Biodata
+  namaLengkap      String
+  namaAyah         String?
+  tempatLahir      String
+  tanggalLahir     DateTime
+  jenisKelamin     JenisKelamin
+  statusPerkawinan String?
+  alamat           String
+  noTelp           String
+  email            String?
+
+  // Status dokumen
+  statusPaspor StatusDokumen @default(BELUM)
+  statusVisa   StatusDokumen @default(BELUM)
+  statusFoto   StatusDokumen @default(BELUM)
+
+  statusPendaftaran StatusPendaftaran @default(MENUNGGU)
+
+  // Skema pembayaran
+  tipeSkema         SkemaBayar @default(NORMAL)
+  depositMinimal    Decimal? // admin set, wajib jika UDBN
+  sudahBerangkat    Boolean    @default(false)
+  deadlinePelunasan DateTime? // untuk UDBN: X hari setelah pulang
+
+  tagihan    TagihanCicilan[]
+  pembayaran Pembayaran[]
+  dokumen    Dokumen[]
+  createdAt  DateTime           @default(now())
+}
+
+model TagihanCicilan {
+  id         String        @id @default(cuid())
+  jamaahId   String
+  jamaah     Jamaah        @relation(fields: [jamaahId], references: [id], onDelete: Cascade)
+  urutan     Int // cicilan ke-1, ke-2, dst
+  jumlah     Decimal
+  deadline   DateTime? // null = flexible
+  status     StatusTagihan @default(BELUM)
+  pembayaran Pembayaran? // satu tagihan satu pembayaran aktif
+  createdAt  DateTime      @default(now())
+}
+
+model Pembayaran {
+  id               String           @id @default(cuid())
+  jamaahId         String
+  jamaah           Jamaah           @relation(fields: [jamaahId], references: [id], onDelete: Cascade)
+  tagihanId        String?          @unique // link ke cicilan spesifik
+  tagihan          TagihanCicilan?  @relation(fields: [tagihanId], references: [id], onDelete: SetNull)
+  jumlah           Decimal
+  metodeBayar      MetodeBayar
+  qrisProvider     QrisProvider? // diisi jika metodeBayar = QRIS
+  buktiBayar       String? // wajib jika QRIS atau TRANSFER
+  statusVerifikasi StatusVerifikasi @default(MENUNGGU)
+  catatanRejeksi   String?
+  verifiedBy       String? // userId admin
+  verifiedAt       DateTime?
+  tanggal          DateTime         @default(now())
+  createdBy        String // userId (staff, admin, atau jamaah)
+}
+
+model Dokumen {
+  id         String        @id @default(cuid())
+  jamaahId   String
+  jamaah     Jamaah        @relation(fields: [jamaahId], references: [id], onDelete: Cascade)
+  tipe       TipeDokumen
+  fileUrl    String
+  fileName   String
+  fileSize   Int
+  status     StatusDokumen @default(UPLOAD)
+  catatan    String?
+  uploadedAt DateTime      @default(now())
+  verifiedBy String?
+  verifiedAt DateTime?
+}
+
+// ============ MODEL CMS LANDING PAGE ============
+
+model Artikel {
+  id          String   @id @default(cuid())
+  judul       String
+  slug        String   @unique
+  kategori    String
+  excerpt     String?
+  konten      String
+  coverUrl    String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Ustadz {
+  id       String   @id @default(cuid())
+  nama     String
+  gelar    String?
+  bio      String?
+  fotoUrl  String?
+  keahlian String[]
+  urutan   Int      @default(0)
+}
+
+model Testimoni {
+  id         String  @id @default(cuid())
+  namaJamaah String
+  kota       String?
+  paketId    String?
+  paket      Paket?  @relation(fields: [paketId], references: [id], onDelete: SetNull)
+  quote      String
+  rating     Int?
+  fotoUrl    String?
+}
+
+model LokasiKantor {
+  id            String  @id @default(cuid())
+  nama          String
+  kota          String
+  alamat        String
+  noTelp        String?
+  isKantorPusat Boolean @default(false)
+  urutan        Int     @default(0)
+}
+
+model PartnerLogo {
+  id      String @id @default(cuid())
+  nama    String
+  logoUrl String
+  urutan  Int    @default(0)
+}
+
+model HeroSlide {
+  id        String  @id @default(cuid())
+  judul     String
+  quote     String?
+  gambarUrl String?
+  videoUrl  String?
+  ctaLabel  String?
+  ctaHref   String?
+  urutan    Int     @default(0)
+  isActive  Boolean @default(true)
+}

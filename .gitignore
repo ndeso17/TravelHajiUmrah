@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# Backend uploads
+backend/uploads/
+
+# Referensi payment (QRIS sample) — jangan di-commit
+Payment/
+
+# Prisma
+backend/prisma/*.db
+
+# Tooling internal
+.omo/
+.codegraph/
+.playwright-cli/
+
+# Internal project docs (jangan di-push ke remote)
+.work/
+Architecture.md
+Design.md
+HANDOFF.md
+NEXT-AGENT-PROMPT.md
+PLAN.md
+PRD.md
+Rules.md
+Schema.md
+TODO.md

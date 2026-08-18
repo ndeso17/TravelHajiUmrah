@@ -1,0 +1,11 @@
+export { HeroSection } from './HeroSection';
+export { LayananSection } from './LayananSection';
+export { TentangSection } from './TentangSection';
+export { TestimoniSection } from './TestimoniSection';
+export { UstadzSection } from './UstadzSection';
+export { PartnerSection } from './PartnerSection';
+export { ArtikelSection } from './ArtikelSection';
+export { LokasiSection } from './LokasiSection';
+export { CtaBanner } from './CtaBanner';
+export { SeoSection } from './SeoSection';
+export { FloatingCta } from './FloatingCta';
